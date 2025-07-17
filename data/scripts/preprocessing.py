@@ -204,7 +204,7 @@ class BertInput():
             attention_masks.append(att_mask)
         return attention_masks
 
-    def fit_transform(self, sents, max_length = 189):
+    def fit_transform(self, sents):
         """ get input_ids and mask_ids
         :param sents: list of sentences
         :returns: input ids and masks
@@ -222,12 +222,7 @@ class HumAidPreprocessing():
       Initializes the dataset dictionary and the JSON objects.
     """
     self.task_type = task_type
-    self.events_set_test = [
-      ["canada_wildfires_2016", "hurricane_matthew_2016", "ecuador_earthquake_2016", "midwestern_us_floods_2019"],
-      ["california_wildfires_2018", "hurricane_dorian_2019", "kaikoura_earthquake_2016", "kerala_floods_2018"]
-    ]
     self.text_preprocessor = TextPreprocessing()
-    #self.data_aug = DataAugmentation()
     self.bert_input = BertInput(tokenizer, max_length=189)
     self.label_dict = {
       "humanitarian": {
@@ -308,7 +303,7 @@ class HumAidPreprocessing():
       "Licensing.txt"
     ]
     path_dir = os.path.dirname(__file__)
-    path_dir = os.path.join(path_dir, '..', 'raw')
+    path_dir = os.path.join(path_dir, '..', 'raw', 'HumAid')
     dirs = [os.path.join(path_dir, "events_set1"), os.path.join(path_dir, "events_set2")]
     dictionary = {
     crisis: {} for crisis in crisis_types if crisis != "cyclone"
@@ -338,12 +333,68 @@ class HumAidPreprocessing():
           #print(f"Input shape : {max([len(l) for l in dictionary[found_crisis][file]['inputs'][0]])}")
           
     return dictionary
+  
+class FrenchCorpusPreprocessing():
+
+    def __init__(self, tokenizer, task=["utility"]):
+        """
+        paths : list of paths to the json files
+        Initializes the dataset dictionary and the JSON objects.
+        """
+        path_dir = os.path.dirname(__file__)
+        path_dir = os.path.join(path_dir, '..', 'raw', 'FrenchCorpus', 'French_Corpus.csv')
+        self.task = task
+        self.text_preprocessor = TextPreprocessing()
+        self.bert_input = BertInput(tokenizer, max_length=146)
+        self.classes = {
+            "humanitarian": ("CAT", {'Message-NonUtilisable': 0, 'Soutiens': 1, 'AutresMessages': 2, 'Critiques': 3, 'Avertissement-conseil': 4, 'Degats-Materiels': 5, 'Degats-Humains': 6, 'NotAnnotated': 7}),
+            "urgency": ("CAT3", {'Message-NonUtilisable': 0, 'Message-InfoNonUrgent': 1, 'Message-InfoUrgent': 2}),
+            "utility": ("CAT2", {'Message-NonUtilisable': 0, 'Message-Utilisable': 1})
+        }
+        self.nb_classes = [len(self.classes[type_class][1]) for type_class in self.task]
+        self.df = pd.read_csv(path_dir, sep="\t", low_memory=False)
+        self.clean_dataframe()
+
+    def clean_dataframe(self):
+        """
+        Clean the Data Frame containing all the data
+        Remove the not annotated tweets
+        """
+        self.df = self.df[self.df["CAT"] != "NotAnnotated"]
+
+    def preprocessing(self):
+        """
+        Creates the giant dictionary with {
+            crisis_type : {
+            event : {
+                inputs: [torch.tensor],
+                targets: [torch.tensor]
+            }
+            }
+        }
+        """
+        dictionary = {}
+        for crisis in self.df["type_crisis"].unique():
+            print(f"Processing crisis type : {crisis}")
+            dictionary[crisis] = {}
+            for event in self.df[self.df["type_crisis"] == crisis]["event"].unique():
+                df_event = self.df[self.df["event"] == event]
+                preprocessed_text = list(self.text_preprocessor.preprocess_text(df_event["processed_text"]))
+                dictionary[crisis][event] = {
+                    "inputs": self.bert_input.fit_transform(preprocessed_text),
+                    "targets": [ torch.tensor(list(df_event[self.classes[type_class][0]].map(self.classes[type_class][1]))) for type_class in self.task ]
+                }
+                
+        # Remove specific events from the dictionary
+        return {key: dictionary[key] for key in dictionary.keys() if key not in ["ATTACK", "Explosion", "Fire"]}
 
 class DataPreprocessing():
 
     def __init__(self, tokenizer, task_type, dataset="HumAid"):
         if dataset == "HumAid":
             data_preprocessing = HumAidPreprocessing(tokenizer, task_type)
+        elif dataset == "FrenchCorpus":
+            data_preprocessing = FrenchCorpusPreprocessing(tokenizer, task_type)
         else:
             raise ValueError("Dataset not supported")
         self.nb_classes = data_preprocessing.nb_classes

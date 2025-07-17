@@ -1,0 +1,76 @@
+{
+    "splits": {
+        "HumAid": [
+            [
+                "train",
+                [
+                    "canada_wildfires_2016",
+                    "hurricane_florence_2018",
+                    "kaikoura_earthquake_2016",
+                    "midwestern_us_floods_2019"
+                ]
+            ]
+        ],
+        "FrenchCorpus": [
+            [
+                "test",
+                [
+                    "Aude",
+                    "Beryl-Guadeloupe",
+                    "EffondrementLille",
+                    "Harvey",
+                    "Incendie"
+                ]
+            ],
+            [
+                "test",
+                [
+                    "Corse",
+                    "Corse-fionn",
+                    "EffondrementMarseille",
+                    "Harvey",
+                    "NotreDame"
+                ]
+            ],
+            [
+                "test",
+                [
+                    "Autre",
+                    "Egon",
+                    "Irma",
+                    "NotreDame",
+                    "EffondrementLille"
+                ]
+            ]
+        ]
+    },
+    "orders": {
+        "HumAid": [
+            [
+                "wildfires",
+                "hurricane",
+                "floods",
+                "earthquake"
+            ],
+            [
+                "hurricane",
+                "earthquake",
+                "floods",
+                "wildfires"
+            ],
+            [
+                "earthquake",
+                "hurricane",
+                "floods",
+                "wildfires"
+            ],
+            [
+                "floods",
+                "hurricane",
+                "earthquake",
+                "wildfires"
+            ]
+        ],
+        "FrenchCorpus": []
+    }
+}

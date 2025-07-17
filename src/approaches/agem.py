@@ -22,11 +22,11 @@ class AverageGradientOfEpisodicMemory(ContinualLearning):
         self.domains = list(data.data.keys())
 
         self.memory = EpisodicMemory(self.domains)
-        self.model = RoBERTaClassifier(nb_classes=self.nb_classes, device=self.device).to(device)
+        self.model = self.load_model(self.dataset, self.nb_classes, self.device)
         self.optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=3e-5)
 
     def reset_model(self):
-        self.model = RoBERTaClassifier(nb_classes=self.nb_classes, device=self.device).to(self.device)
+        self.model = self.load_model(self.dataset, self.nb_classes, self.device)
         self.optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=3e-5)
         self.memory = EpisodicMemory(self.domains)
 

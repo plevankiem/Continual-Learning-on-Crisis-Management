@@ -1,6 +1,7 @@
 # Spécifique au projet
 /results/
 models/weights/
+notebooks/
 
 data/raw/
 data/processed/

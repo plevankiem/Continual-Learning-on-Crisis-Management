@@ -10,21 +10,33 @@ import sys
 import pandas as pd
 import numpy as np
 
+from models.model import RoBERTaClassifier, FlauBERTClassifier
+
 
 path = Path(os.path.dirname(__file__))
-config_path = os.path.join(path.parent.parent, "config")
+config_path = path.parent.parent
 
 class ContinualLearning():
-
     def __init__(self, data):
         self.model = None
         self.device = None
         self.model_name = None
         self.dataset = data.dataset
         self.seeds = [42]
-        self.protocol = "similarity"
-        with open(os.path.join(config_path, "splits.json"), "r") as f:
-            self.splits = json.load(f)
+        self.protocol = ""
+        with open(os.path.join(config_path, "config.json"), "r") as f:
+            self.config = json.load(f)
+
+    def load_model(self, dataset, nb_classes, device):
+        """
+        Load the model based on the dataset and number of classes.
+        """
+        if dataset == "HumAid":
+            return RoBERTaClassifier(nb_classes=nb_classes, device=device).to(device)
+        elif dataset == "FrenchCorpus":
+            return FlauBERTClassifier(nb_classes=nb_classes, device=device).to(device)
+        else:
+            raise ValueError(f"Unknown dataset: {dataset}. Supported datasets are 'HumAid' and 'FrenchCorpus'.")
 
     def reset_model(self):
         """
@@ -90,8 +102,8 @@ class ContinualLearning():
     
     def split_dataset(self, data, n_set):
         train_data, test_data = {}, {}
-        split_key = self.splits[self.dataset][n_set][0]
-        split = self.splits[self.dataset][n_set][1]
+        split_key = self.config["splits"][self.dataset][n_set][0]
+        split = self.config["splits"][self.dataset][n_set][1]
 
         for crisis in data.data.keys():
             for event in data.data[crisis].keys():
@@ -148,12 +160,7 @@ class ContinualLearning():
         save_dir = os.path.join(path.parent.parent, "results", self.dataset, self.model_name)
 
         if self.protocol == "similarity":
-            all_orders = [
-                ['wildfires', 'hurricane', 'floods', 'earthquake'],
-                ['hurricane', 'earthquake', 'floods', 'wildfires'],
-                ['earthquake', 'hurricane', 'floods', 'wildfires'],
-                ['floods', 'hurricane', 'earthquake', 'wildfires']
-            ]
+            all_orders = self.config["orders"][self.dataset]
         else:
             all_orders = [crisis_list]
             for _ in range(len(crisis_list)-1):
@@ -163,8 +170,8 @@ class ContinualLearning():
             print(f"Training on order {', '.join(order)} | {n_order+1}/{len(all_orders)}")
             print("")
 
-            for n_set in range(len(self.splits[self.dataset])):
-                print(f"Training on split {n_set+1}/{len(self.splits[self.dataset])}")
+            for n_set in range(len(self.config["splits"][self.dataset])):
+                print(f"Training on split {n_set+1}/{len(self.config["splits"][self.dataset])}")
                 print("")
                 self.reset_model()
                 train_data, test_data = self.split_dataset(data, n_set)
@@ -182,9 +189,9 @@ class ContinualLearning():
                     for task in A.keys():
                         A[task] += A_set[task]
             
-            scores /= len(self.splits[self.dataset])
+            scores /= len(self.config["splits"][self.dataset])
             for task in A.keys():
-                A[task] /= len(self.splits[self.dataset])
+                A[task] /= len(self.config["splits"][self.dataset])
 
             final_scores.append(scores)
 

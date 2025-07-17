@@ -20,7 +20,7 @@ class SynapticIntelligence(ContinualLearning):
         self.task_type = data.task_type
         self.model_name = "si"
         self.tokenizer = data.tokenizer
-        self.model = RoBERTaClassifier(nb_classes=self.nb_classes,  device=self.device).to(device)
+        self.model = self.load_model(self.dataset, self.nb_classes, self.device)
         self.nb_params = sum([p.numel() for p in self.model.parameters()])
         self.weights = [torch.zeros_like(p) for p in self.model.parameters()]
         self.optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=3e-5)
@@ -28,7 +28,7 @@ class SynapticIntelligence(ContinualLearning):
         self.ksi = 1e-8
 
     def reset_model(self):
-        self.model = RoBERTaClassifier(nb_classes=self.nb_classes,  device=self.device).to(self.device)
+        self.model = self.load_model(self.dataset, self.nb_classes, self.device)
         self.weights = [torch.zeros_like(p) for p in self.model.parameters()]
         self.optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=3e-5)
 

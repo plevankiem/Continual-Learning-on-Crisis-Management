@@ -20,14 +20,14 @@ class ElasticWeightsConsolidation(ContinualLearning):
         self.task_type = data.task_type
         self.model_name = "ewc"
         self.tokenizer = data.tokenizer
-        self.model = RoBERTaClassifier(nb_classes=data.nb_classes, device=device).to(device)
+        self.model = self.load_model(self.dataset, data.nb_classes, device)
         self.nb_params = sum([p.numel() for p in self.model.parameters()])
         self.fisher_matrix = [torch.zeros_like(p) for p in self.model.parameters()]
         self.optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=3e-5)
         self.lambda_ = lambda_
 
     def reset_model(self):
-        self.model = RoBERTaClassifier(nb_classes=self.nb_classes, device=self.device).to(self.device)
+        self.model = self.load_model(self.dataset, self.nb_classes, self.device)
         self.fisher_matrix = [torch.zeros_like(p) for p in self.model.parameters()]
         self.optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, self.model.parameters()), lr=3e-5)
 
