@@ -1,6 +1,9 @@
-from data.preprocessing import DataPreprocessing
+import os
+import sys
 
-from torchutils.data import DataLoader, Dataset
+from data.scripts.preprocessing import DataPreprocessing
+
+from torch.utils.data import DataLoader, Dataset
 
 class MultiTaskDataset(Dataset):
   """
@@ -32,11 +35,11 @@ class CrisisDataset():
 
     self.batch_size = batch_size
     self.task_type = task_type
+    self.dataset = dataset
+    self.tokenizer = tokenizer
 
     data_preprocessing = DataPreprocessing(tokenizer, task_type, dataset)
-    self.events_set_test = data_preprocessing.events_set_test
     self.nb_classes = data_preprocessing.nb_classes
-    self.tokenizer = tokenizer
     self.data = {}
     for crisis, events in data_preprocessing.data.items():
         self.data[crisis] = {}

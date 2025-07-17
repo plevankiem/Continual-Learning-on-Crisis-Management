@@ -1,0 +1,39 @@
+# Spécifique au projet
+/results/
+models/weights/
+
+data/raw/
+data/processed/
+
+# Environnements virtuels
+venv/
+.env/
+.venv/
+
+# Fichiers Python compilés
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Notebooks checkpoints (Jupyter)
+.ipynb_checkpoints/
+
+# Logs et sorties temporaires
+*.log
+logs/
+outputs/
+tmp/
+
+# Fichiers de configuration secrets
+.env
+*.secret
+
+# Fichiers systèmes (macOS, Windows, etc.)
+.DS_Store
+Thumbs.db
+
+# Dossiers d’exécution ou IDE
+.idea/
+.vscode/
+*.code-workspace

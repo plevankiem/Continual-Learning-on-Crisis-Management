@@ -105,8 +105,7 @@ class TextPreprocessing:
             :param text: text
             :returns: text without punctuations
             """
-
-            return re.sub('["$#%()*+,-@./:;?![\]^_`{|}~\n\t’\']', ' ', text)
+            return re.sub(r'["$#%()*+,\-@./:;?!\[\]^_`{|}~\n\t’\']', ' ', text)
 
         def remove_pic_tweet(text):
             """
@@ -308,7 +307,9 @@ class HumAidPreprocessing():
       "Readme.txt",
       "Licensing.txt"
     ]
-    dirs = ["/content/drive/My Drive/CNRS@CREATE/Datasets/HumanAid/events_set1", "/content/drive/My Drive/CNRS@CREATE/Datasets/HumanAid/events_set2"]
+    path_dir = os.path.dirname(__file__)
+    path_dir = os.path.join(path_dir, '..', 'raw')
+    dirs = [os.path.join(path_dir, "events_set1"), os.path.join(path_dir, "events_set2")]
     dictionary = {
     crisis: {} for crisis in crisis_types if crisis != "cyclone"
     }
@@ -318,7 +319,7 @@ class HumAidPreprocessing():
         list_dir = os.listdir(dir)
         list_dir = [x for x in list_dir if x not in not_open]
         # print(f"Processing directory: {list_dir}")
-        progress_bar = tqdm(list_dir, desc=f"Processing {dir} | {n+1}/{len_dir}")
+        progress_bar = tqdm(list_dir, desc=f"Processing {n+1}/{len_dir}")
         for file in progress_bar:
           if file in ["cyclone_idai_2019", "hurricane_harvey_2017", "hurricane_irma_2017"]:
             continue
@@ -335,8 +336,10 @@ class HumAidPreprocessing():
           }
           #print(dictionary[found_crisis][file]['inputs'][0][0])
           #print(f"Input shape : {max([len(l) for l in dictionary[found_crisis][file]['inputs'][0]])}")
+          
+    return dictionary
 
-class DataProcessing():
+class DataPreprocessing():
 
     def __init__(self, tokenizer, task_type, dataset="HumAid"):
         if dataset == "HumAid":
