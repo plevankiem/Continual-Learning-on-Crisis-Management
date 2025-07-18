@@ -10,14 +10,13 @@ Crisis-response NLP systems must adapt to **new incoming events** without catast
 
 ### Implemented Methods
 
-* **AGEM** (Gradient Episodic Memory variant)
 * **Cumulative** (joint training upper bound)
-* **Continual** (naïve sequential fine-tune baseline)
+* **Vanilla** (vanilla sequential fine-tuning)
 * **EWC** (Elastic Weight Consolidation)
 * **MAS** (Memory Aware Synapses)
 * **SI**  (Synaptic Intelligence)
-* **Vanilla** replay (simple experience replay buffer)
-* **NER** utilities / wrapper (sequence‑labeling support; optional)
+* **NER** (Basic Experience Replay)
+* **AGEM** (Gradient Episodic Memory variant)
 
 All methods share a common interface so you can switch approaches with a single CLI flag.
 
